@@ -117,6 +117,21 @@ remaining operational step.
   so per-state attribution from the MRF is inherently fuzzy and would need tens of
   thousands of NPI lookups. The rate signal is real; the geography is Medicare's.
 
+### Multi-payer (data/v1/ rebuilt across 3 payers)
+
+- **`build_real.py` is now a multi-payer registry** (UHC + Centene + Cigna), with
+  per-payer discovery and per-payer error isolation. `data/v1/` is rebuilt from 166
+  real plan files (UHC 150, Centene 13, Cigna 3); every code is now
+  `payer_scope=multi` — the merge blends per-payer ratios by n-weighted mean, so the
+  numbers are no longer UHC-only. 90837 median moved to $131 (was $130 UHC-only) with
+  Cigna (rich national files, behavioral health folded in) and Centene (near-Medicare
+  ACA rates) mixed in. n in the tens of thousands per common code.
+- Payer access: Cigna via `cigna.com/static/mrf/latest.json` -> signed CloudFront TOC
+  -> signed file URLs; Centene via constructed brand index URLs. Aetna (SPA), Anthem
+  (~10GB index), Humana (synthetic data), Kaiser (integrated HMO) deferred with reasons.
+- **`ijson`** is now an `[ingest]` extra (`pip install -e ".[ingest]"`) — required to
+  stream the large Cigna files.
+
 ### Planned
 
 - Broaden beyond a 40-plan UHC sample (more plans, more payers) to tighten the

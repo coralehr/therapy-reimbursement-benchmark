@@ -32,6 +32,8 @@ api = [
     "httpx>=0.27",
 ]
 dev = ["pytest>=8.0", "ruff>=0.6"]
+# Real-payer ingestion (oon_bench/build_real.py): ijson streams multi-GB MRFs.
+ingest = ["ijson>=3.2"]
 
 [project.scripts]
 oon-bench = "oon_bench.cli:main"
