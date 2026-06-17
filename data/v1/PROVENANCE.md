@@ -1,17 +1,20 @@
 # v1 dataset provenance
 
 - **Snapshot:** payer Transparency-in-Coverage files dated 2026-06-01.
-- **Multi-payer:** pooled across **3 payers** (`payer_scope = multi`): UHC (150 plan
-  files), Cigna (3 large national files), Centene (13 Ambetter/HealthNet/etc. files) —
-  166 files total. Each streamed through `v1_tic/filter_mrf.py` (ijson), pooled,
+- **Multi-payer:** pooled across **3 payers** (`payer_scope = multi`): UHC (200 plan
+  files), Centene (19 Ambetter/HealthNet/etc. files), Cigna (3 large national files) —
+  222 files total. Each streamed through `v1_tic/filter_mrf.py` (ijson), pooled,
   aggregated per (code, payer) with MIN_N>=10, then the merge blends payers by an
   n-weighted mean into one national ratio per code. Reproduce with
-  `python3 -m oon_bench.build_real uhc=150 centene=40 cigna=8`.
-- **Observation counts:** tens of thousands of professional negotiated rates per common
-  code (n ~66,000 for individual/family/group; ~28,000-33,000 for the testing block;
-  ~2,800-3,200 for the rarer 96127 / 90845). UHC dominates by volume; Cigna and Centene
-  shift the blend (Cigna files are rich, ~4k therapy rows each; Centene ACA rates run
-  near Medicare). National ratios are well-supported.
+  `python3 -m oon_bench.build_real uhc=200 centene=40 cigna=15`. (Cigna caps at ~3
+  files because its non-national plans are still >150MB; UHC dominates by file volume.)
+- **Observation counts:** n ~90,000 for the common individual/family/group codes;
+  ~38,000-46,000 for the testing block; ~4,000 for the rarer 96127 / 90845.
+- **Converged:** the medians are stable across builds — 40 UHC plans, 230 UHC plans,
+  and 222 multi-payer plans all put 90837 within ~$130-137 and 90791 within ~$145-151.
+  Adding files/payers no longer moves the estimate, which is the signal that this slice
+  is well-supported (the lake is boiled). Cigna (rich national files, behavioral health
+  folded in) and Centene (near-Medicare ACA rates) shift the blend only slightly.
 - **basis = `tic_innetwork_proxy`**. In-network negotiated rates are used as the
   out-of-network proxy because payers' actual OON allowed-amount files are effectively
   empty (UHC's largest is 17 KB). See README / METHODOLOGY.

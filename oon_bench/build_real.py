@@ -151,7 +151,7 @@ def discover_centene(n: int) -> list:
                     locs.append(loc)
     locs = sorted(set(locs))
     log(f"  centene: {len(locs)} in-network locations; sizing")
-    return _pick_smallest(locs, n, cap=30_000_000)
+    return _pick_smallest(locs, n, cap=60_000_000, head_budget=200)
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +186,7 @@ def discover_cigna(n: int) -> list:
                 if len(locs) >= 120:
                     break
     log(f"  cigna: {len(locs)} cigna-native in-network locations; sizing")
-    return _pick_smallest(locs, n, cap=80_000_000, head_budget=120)
+    return _pick_smallest(locs, n, cap=150_000_000, head_budget=120)
 
 
 PAYERS = {"uhc": discover_uhc, "centene": discover_centene, "cigna": discover_cigna}
