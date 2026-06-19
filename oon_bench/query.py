@@ -287,6 +287,7 @@ class RateStore:
             "cpt_code": cpt,
             "service_label": str(code_rec.get("service_label") or ""),
             "medicare_status": str(code_rec.get("medicare_status") or ""),
+            "by_payer": code_rec.get("by_payer") or {},
         }
 
         region_map: dict[str, dict] = {}
@@ -361,9 +362,14 @@ class RateStore:
         """Return the code catalog: [{cpt_code, service_label, medicare_status}].
 
         Order follows first-seen ingestion order (which mirrors the dataset /
-        therapy_codes.py order).
+        therapy_codes.py order). The catalog is intentionally lean (no by_payer
+        payload — that rides on the per-rate response).
         """
-        return [dict(rec) for rec in self._codes.values()]
+        return [
+            {"cpt_code": r["cpt_code"], "service_label": r["service_label"],
+             "medicare_status": r["medicare_status"]}
+            for r in self._codes.values()
+        ]
 
     def has_code(self, cpt: str) -> bool:
         return str(cpt).strip() in self._codes
@@ -457,6 +463,7 @@ class RateStore:
             },
             "confidence": self._confidence_for(basis, n_obs),
             "n_obs": n_obs,
+            "by_payer": code_meta.get("by_payer") or {},
             "source": self._source,
             "snapshot_date": self.snapshot_date,
             "disclaimer": self._disclaimer,

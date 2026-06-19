@@ -364,3 +364,38 @@ class TestFromFile:
         assert res["confidence"] == "low"
         # Unknown CPT still None against the real dataset.
         assert store.get_rate("12345", "AL") is None
+
+
+# --------------------------------------------------------------------------- #
+# by_payer breakout surfaced on the rate result
+# --------------------------------------------------------------------------- #
+class TestByPayer:
+    def _store(self, by_payer):
+        ds = {
+            "meta": {"snapshot_date": "2026-06-07", "disclaimer": "estimate, not a guarantee"},
+            "codes": [{
+                "cpt_code": "90837", "service_label": "Individual therapy, 60 minutes",
+                "medicare_status": "A",
+                "national": {"medicare_usd": 167.0, "basis": "tic_innetwork_proxy",
+                             "oon_low_usd": 116.0, "oon_mid_usd": 130.0, "oon_high_usd": 164.0,
+                             "oon_obs_n": 80000, "payer_scope": "multi"},
+                "localities": [], **({"by_payer": by_payer} if by_payer is not None else {})},
+            ],
+        }
+        return RateStore(ds)
+
+    def test_by_payer_surfaced(self):
+        bp = {"uhc": {"n_obs": 64000, "median": 130.0},
+              "cigna": {"n_obs": 1000, "median": 164.0}}
+        r = self._store(bp).get_rate("90837", "US")
+        assert set(r["by_payer"]) == {"uhc", "cigna"}
+        assert r["by_payer"]["cigna"]["median"] == 164.0
+
+    def test_by_payer_absent_is_empty_dict(self):
+        r = self._store(None).get_rate("90837", "US")
+        assert r["by_payer"] == {}
+
+    def test_catalog_excludes_by_payer(self):
+        bp = {"uhc": {"n_obs": 1, "median": 1.0}}
+        codes = self._store(bp).list_codes()
+        assert all("by_payer" not in c for c in codes)

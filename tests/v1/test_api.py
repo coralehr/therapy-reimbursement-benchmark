@@ -195,6 +195,7 @@ class TestRates:
             "estimate",
             "confidence",
             "n_obs",
+            "by_payer",
             "source",
             "snapshot_date",
             "disclaimer",
